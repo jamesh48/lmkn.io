@@ -1,18 +1,31 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import axios from 'axios';
 import { Box, OutlinedInput, Typography } from '@mui/material';
 import { Formik, Form } from 'formik';
 import debounce from 'lodash/debounce';
+import UserIdInput from './UserIdInput';
+import PasswordInput from './PasswordInput';
+import PhoneNumberInput from './PhoneNumberInput';
+import OptInInput from './OptInInput';
 
 const NewUserForm = () => {
-  const [userIdError, setUserIdError] = useState('');
   const [submissionError, setSubmissionError] = useState('');
-  const createUser = async (values: { phone: string; userId: string }) => {
+  const [userIdMessage, setUserIdMessage] = useState('');
+  const [phoneMessage, setPhoneMessage] = useState('');
+  const createUser = async (values: {
+    phone: string;
+    userId: string;
+    passwordOne: string;
+  }) => {
     try {
       await axios({
         method: 'POST',
         url: '/api/createUser',
-        params: { userId: values.userId, userPhone: values.phone },
+        params: {
+          userId: values.userId,
+          userPhone: values.phone,
+          password: values.passwordOne,
+        },
       });
     } catch (err) {
       const typedErr = err as {
@@ -21,8 +34,6 @@ const NewUserForm = () => {
       setSubmissionError(typedErr.response.data.error);
     }
   };
-
-  const ref = useRef<HTMLInputElement>();
 
   const validateUser = async (userId: string) => {
     try {
@@ -40,41 +51,90 @@ const NewUserForm = () => {
     }
   };
 
-  const debouncedValidateUser = useRef(
+  const validatePhone = async (phone: string) => {
+    try {
+      const { data } = await axios({
+        method: 'GET',
+        url: '/api/checkPhoneNumber',
+        params: { userPhone: phone },
+      });
+      return data.success === true
+        ? 'Phone Number already exists!'
+        : 'Phone Number is Available!';
+    } catch (error) {
+      console.error('Error checking phone:', error);
+      return '';
+    }
+  };
+
+  const userIdRef = useRef(null);
+  const phoneRef = useRef(null);
+
+  const debouncedValidateUser = useCallback(
     debounce(async (userId: string) => {
-      setUserIdError('Validating...'); // Show loading indicator
-      const error = await validateUser(userId);
-      setUserIdError(error); // Update error message
-    }, 500)
-  ).current;
+      setUserIdMessage('Validating...'); // Show loading indicator
+      const message = await validateUser(userId);
+      setUserIdMessage(message); // Update error message
+    }, 500),
+    []
+  );
+
+  const debouncedValidatePhoneNumber = useCallback(
+    debounce(async (phone: string) => {
+      setPhoneMessage('Validating...');
+      const message = await validatePhone(phone);
+      setPhoneMessage(message);
+    }, 500),
+    []
+  );
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Formik
-        initialValues={{ phone: '', userId: '', optedIn: false }}
+        initialValues={{
+          phone: '',
+          userId: '',
+          optedIn: false,
+          passwordOne: '',
+          passwordTwo: '',
+        }}
         validate={async (values) => {
-          const errors = {} as { phone: string; userId: string };
+          const errors = {} as {
+            phone: string;
+            userId: string;
+            passwordOne: string;
+            passwordTwo: string;
+          };
           if (!values.userId.length) {
-            setUserIdError('Required');
+            setUserIdMessage('Required');
           } else if (values.userId.length > 0) {
-            debouncedValidateUser(values.userId);
+            // Don't validate when the username is not being typed on
+            if (userIdRef.current === document.activeElement) {
+              debouncedValidateUser(values.userId);
+            }
           }
 
           if (!values.phone.length) {
-            errors.phone = 'Required';
+            setPhoneMessage('Required');
           } else if (!values.phone.startsWith('+1')) {
-            errors.phone = 'phone number must start with +1';
+            setPhoneMessage('phone number must start with +1');
           } else if (values.phone.length !== 12) {
-            errors.phone = 'phone number must be 10 digits long';
+            setPhoneMessage('phone number must be 10 digits long');
           } else if (values.phone.length === 12) {
-            const { data } = await axios({
-              method: 'GET',
-              url: '/api/checkPhoneNumber',
-              params: { userPhone: values.phone },
-            });
-            if (data.success === true) {
-              errors.phone = 'Phone Number already exists!';
+            if (phoneRef.current === document.activeElement) {
+              debouncedValidatePhoneNumber(values.phone);
             }
+          }
+          if (!values.passwordOne) {
+            errors.passwordOne = 'Required';
+          } else if (
+            values.passwordOne &&
+            values.passwordTwo &&
+            values.passwordOne.length < 8
+          ) {
+            errors.passwordOne = 'password must be at least 8 characters';
+          } else if (values.passwordOne !== values.passwordTwo) {
+            errors.passwordOne = 'passwords do not match';
           }
 
           if (Object.keys(errors).length) {
@@ -100,107 +160,47 @@ const NewUserForm = () => {
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-start',
-              alignItems: 'flex-start',
+              justifyContent: 'center',
+              alignItems: 'center',
               border: '1px solid black',
               padding: '1rem',
+              width: '25rem',
             }}
           >
             <Typography>{submissionError}</Typography>
             <Form>
-              <OutlinedInput
-                placeholder="Unique User ID"
-                name="userId"
-                onChange={handleChange}
-                value={values.userId}
-                sx={{ width: '100%' }}
+              <UserIdInput
+                handleChange={handleChange}
+                userId={values.userId}
+                userIdMessage={userIdMessage}
+                inputRef={userIdRef}
               />
-              <Typography
-                sx={{
-                  color:
-                    userIdError.startsWith('Validating') ||
-                    userIdError === 'User Identifier is Available!'
-                      ? 'green'
-                      : 'red',
-                }}
-              >
-                {userIdError}
-              </Typography>
-              {values.userId.length && !errors.userId ? (
+              {values.userId.length &&
+              userIdMessage === 'User Identifier is Available!' ? (
                 !values.optedIn ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      padding: '1rem',
-                      border: '1px solid lightgray',
-                      borderRadius: '5px',
-                    }}
-                  >
-                    <Typography>Opt In To Receive Text Messages?</Typography>
-                    <OutlinedInput
-                      onClick={() => setFieldValue('optedIn', true)}
-                      type="button"
-                      value="yes"
-                      sx={{
-                        bgcolor: 'green',
-                        color: 'white',
-                        width: '5rem',
-                        height: '2rem',
-                        ml: '1rem',
-                      }}
-                      inputProps={{ sx: { cursor: 'pointer' } }}
-                    />
-                  </Box>
+                  <OptInInput setFieldValue={setFieldValue} />
                 ) : (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <OutlinedInput
-                        placeholder="Your Phone Number"
-                        fullWidth
-                        name="phone"
-                        value={values.phone}
-                        onChange={handleChange}
-                        disabled={values.phone.length === 12 && isValidating}
-                        autoFocus
-                        inputRef={ref}
-                        onBlur={() =>
-                          setTimeout(() => {
-                            ref.current?.focus();
-                          }, 2000)
-                        }
-                      />
-
-                      <OutlinedInput
-                        value="opt out?"
-                        type="button"
-                        onClick={() => setFieldValue('optedIn', false)}
-                        sx={{
-                          backgroundColor: 'red',
-                          color: 'white',
-                          width: '5rem',
-                          height: '2rem',
-                          ml: '1rem',
-                        }}
-                        inputProps={{ sx: { cursor: 'pointer' } }}
-                      />
-                    </Box>
-                    <Typography sx={{ color: 'red' }}>
-                      {errors.phone}
-                    </Typography>
-                  </Box>
+                  <PhoneNumberInput
+                    isValidating={isValidating}
+                    setFieldValue={setFieldValue}
+                    handleChange={handleChange}
+                    phoneErrors={phoneMessage}
+                    phone={values.phone}
+                    inputRef={phoneRef}
+                  />
                 )
               ) : null}
 
-              {values.optedIn && !errors.phone ? (
+              {values.optedIn &&
+              phoneMessage === 'Phone Number is Available!' ? (
+                <PasswordInput
+                  handleChange={handleChange}
+                  passwordOneErrors={errors.passwordOne || 'Passwords Match!'}
+                  passwordOne={values.passwordOne}
+                  passwordTwo={values.passwordTwo}
+                />
+              ) : null}
+              {!errors.passwordOne ? (
                 <OutlinedInput
                   fullWidth
                   type="submit"

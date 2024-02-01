@@ -9,7 +9,6 @@ export default router
   .clone()
   .get(async (req: NextApiRequest, res: NextApiResponse) => {
     const userId = req.query.userId as string;
-    console.log(userId);
     // Database Lookup - does user already exist
     const queryCommand = new QueryCommand({
       TableName: 'lmk-user-table',
@@ -20,7 +19,6 @@ export default router
     });
 
     const data = await client.send(queryCommand);
-    console.log(data);
     if (data.Items && data.Items.length) {
       return res.send({ data: unmarshall(data.Items[0]), success: true });
     }

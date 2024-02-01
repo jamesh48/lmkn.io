@@ -16,7 +16,6 @@ import { createRouter } from 'next-connect';
 export const ncRouter = createRouter<NextApiRequest, NextApiResponse>().get(
   async (req) => {
     const userId = req.query.slug as string[];
-    console.log(userId);
     // Return Home Page
     if (!userId || !userId.length) {
       return { props: {} };

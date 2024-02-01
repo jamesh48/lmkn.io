@@ -3,6 +3,7 @@ import {
   PutItemCommand,
   QueryCommand,
 } from '@aws-sdk/client-dynamodb';
+import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import router from '../../api-libs/base';
 
@@ -13,6 +14,7 @@ export default router
   .post(async (req: NextApiRequest, res: NextApiResponse) => {
     const userId = req.query.userId as string;
     const userPhone = req.query.userPhone as string;
+    const userPassword = req.query.userPassword as string;
     // ToDo Validate Inputs
     // Database Lookup - does user already exist
     const command = new QueryCommand({
@@ -29,12 +31,17 @@ export default router
         .status(400)
         .json({ error: 'User Already Exists', success: false });
     } else {
+      if (!process.env.SALT) {
+        throw new Error('ENV SALT is not defined!');
+      }
+      const hashedPassword = await bcrypt.hash(userPassword, process.env.SALT);
       // If not, create user
       const putItemCommand = new PutItemCommand({
         TableName: 'lmk-user-table',
         Item: {
           userId: { S: userId },
           userPhone: { S: userPhone },
+          userPassword: { S: hashedPassword },
         },
       });
 

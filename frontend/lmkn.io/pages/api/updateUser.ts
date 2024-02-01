@@ -41,11 +41,9 @@ export default router
           ':value': { S: updateValue },
         },
       });
-      console.log(updateItemCommand.input);
       await client.send(updateItemCommand);
       return res.send({ message: 'ok' });
     } catch (err) {
-      console.log(err);
       return res.status(500).send({ error: 'Error!' });
     }
   })
