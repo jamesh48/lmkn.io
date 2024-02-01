@@ -55,6 +55,7 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
           <Typography
             sx={{ cursor: 'pointer' }}
             onClick={() => handleUserPreferencesOpen(true)}
+            variant="h5"
           >
             User Preferences
           </Typography>

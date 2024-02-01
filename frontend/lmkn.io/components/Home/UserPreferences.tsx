@@ -1,7 +1,8 @@
-import { Box, Dialog, Typography } from '@mui/material';
+import { Box, Dialog, OutlinedInput, Typography } from '@mui/material';
 import PinModal from './PinModal';
 import { Close } from '@mui/icons-material';
 import { useState } from 'react';
+import DeleteUserModal from './DeleteUserModal';
 
 interface UserPreferencesProps {
   handleUserPreferencesOpen: (flag: boolean) => void;
@@ -11,35 +12,64 @@ interface UserPreferencesProps {
 
 const UserPreferences = (props: UserPreferencesProps) => {
   const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
 
   const handlePinModalOpen = (flag: boolean) => {
     setPinModalOpen(flag);
   };
+
+  const handleDeleteUserModalOpen = (flag: boolean) => {
+    setDeleteUserModalOpen(flag);
+  };
+
   return (
     <Dialog open={props.userPreferencesOpen}>
-      <Close
-        sx={{ cursor: 'pointer' }}
-        onClick={() => props.handleUserPreferencesOpen(false)}
-      />
-      <Box sx={{ padding: '2.5rem' }}>
+      <Box sx={{ borderBottom: '1px solid black' }}>
+        <Close
+          sx={{ cursor: 'pointer' }}
+          onClick={() => props.handleUserPreferencesOpen(false)}
+        />
+      </Box>
+      <Box
+        sx={{
+          paddingY: '1.5rem',
+          paddingX: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <Box>
-          <Typography>User Preferences</Typography>
+          <Typography variant="h6">User Preferences</Typography>
         </Box>
-        <Box>
-          <Typography
-            onClick={() => handlePinModalOpen(true)}
-            sx={{ cursor: 'pointer' }}
-          >
-            Create Pin?
-          </Typography>
-          <PinModal
-            pinModalOpen={pinModalOpen}
-            handlePinModalOpen={handlePinModalOpen}
-            userId={props.userId}
-          />
-        </Box>
-        <Box>
-          <Typography>Delete User?</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <Box>
+            <OutlinedInput
+              onClick={() => handlePinModalOpen(true)}
+              inputProps={{
+                sx: { cursor: 'pointer', textAlign: 'center' },
+              }}
+              value="Create Pin?"
+              type="button"
+            />
+            <PinModal
+              pinModalOpen={pinModalOpen}
+              handlePinModalOpen={handlePinModalOpen}
+              userId={props.userId}
+            />
+          </Box>
+          <Box>
+            <OutlinedInput
+              value="Delete User?"
+              inputProps={{ sx: { textAlign: 'center', cursor: 'pointer' } }}
+              type="button"
+              onClick={() => handleDeleteUserModalOpen(true)}
+            />
+            <DeleteUserModal
+              deleteUserModalOpen={deleteUserModalOpen}
+              handleDeleteUserModalOpen={handleDeleteUserModalOpen}
+            />
+          </Box>
         </Box>
       </Box>
     </Dialog>

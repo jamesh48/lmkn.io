@@ -1,4 +1,10 @@
-import { Box, Dialog, OutlinedInput, Typography } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Dialog,
+  OutlinedInput,
+  Typography,
+} from '@mui/material';
 import axios from 'axios';
 import { Close } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
@@ -11,11 +17,14 @@ interface PinModalProps {
 const PinModal = (props: PinModalProps) => {
   return (
     <Dialog open={props.pinModalOpen}>
-      <Box>
-        <Close onClick={() => props.handlePinModalOpen(false)} />
+      <Box sx={{ width: '25rem' }}>
+        <Close
+          onClick={() => props.handlePinModalOpen(false)}
+          sx={{ cursor: 'pointer' }}
+        />
         <Formik
           initialValues={{ inputPin: '' }}
-          onSubmit={async (values) => {
+          onSubmit={async (values, helpers) => {
             await axios({
               url: '/api/updateUser',
               method: 'PUT',
@@ -26,6 +35,8 @@ const PinModal = (props: PinModalProps) => {
                 encrypt: true,
               },
             });
+            helpers.resetForm();
+            helpers.setSubmitting(false);
           }}
           validateOnChange={true}
           validate={(values) => {
@@ -37,7 +48,7 @@ const PinModal = (props: PinModalProps) => {
             return {};
           }}
         >
-          {({ values, handleChange, errors }) => {
+          {({ values, handleChange, errors, isSubmitting }) => {
             return (
               <Form>
                 <Box
@@ -45,17 +56,34 @@ const PinModal = (props: PinModalProps) => {
                     display: 'flex',
                     justifyContent: 'center',
                     flexDirection: 'column',
+                    alignItems: 'center',
+                    paddingY: '.5rem',
                   }}
                 >
-                  <OutlinedInput
-                    inputProps={{ maxLength: 8, sx: { textAlign: 'center' } }}
-                    value={values.inputPin}
-                    name="inputPin"
-                    onChange={handleChange}
-                  />
-                  <Typography color="red">
-                    {errors.inputPin && errors.inputPin}
-                  </Typography>
+                  {isSubmitting ? (
+                    <CircularProgress />
+                  ) : (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <OutlinedInput
+                        inputProps={{
+                          maxLength: 8,
+                          sx: { textAlign: 'center' },
+                        }}
+                        value={values.inputPin}
+                        name="inputPin"
+                        onChange={handleChange}
+                      />
+                      <Typography color="red">
+                        {errors.inputPin && errors.inputPin}
+                      </Typography>
+                    </Box>
+                  )}
                   <OutlinedInput
                     type="submit"
                     value="submit"

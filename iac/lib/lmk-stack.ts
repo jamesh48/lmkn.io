@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
+import { StepFunctionsAuthFlow } from './step-function-auth';
 
 export class LMKStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -23,5 +24,11 @@ export class LMKStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
     });
+
+    const { sendCodeLambda, processTaskTokenLambda } =
+      new StepFunctionsAuthFlow(this, 'lmk-auth-flow');
+
+    userTable.grantFullAccess(processTaskTokenLambda);
+    userTable.grantFullAccess(sendCodeLambda);
   }
 }

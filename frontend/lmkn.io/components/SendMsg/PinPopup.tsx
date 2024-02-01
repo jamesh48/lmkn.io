@@ -25,7 +25,10 @@ const PinPopup = (props: PinPopupProps) => {
     <Dialog open={props.pinPopupOpen}>
       <Box>
         <Box sx={{ borderBottom: '1px solid black' }}>
-          <Close onClick={() => props.handlePinPopupOpen(false)} />
+          <Close
+            onClick={() => props.handlePinPopupOpen(false)}
+            sx={{ cursor: 'pointer' }}
+          />
         </Box>
         <Formik
           initialValues={{ inputPin: '', successMessage: false }}
