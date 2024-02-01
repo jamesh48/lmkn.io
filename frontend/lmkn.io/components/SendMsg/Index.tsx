@@ -1,9 +1,17 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
+import PinPopup from './PinPopup';
+import { useState } from 'react';
 
 interface SendMsgProps {
   userId: string;
+  pin: boolean;
 }
 const SendMsg = (props: SendMsgProps) => {
+  const [pinPopupOpen, setPinModalOpen] = useState(false);
+  const handlePinPopupOpen = (flag: boolean) => {
+    setPinModalOpen(flag);
+  };
+
   return (
     <Box
       sx={{
@@ -33,7 +41,7 @@ const SendMsg = (props: SendMsgProps) => {
             justifyContent: 'center',
           }}
         >
-          <Typography variant="h5">Send Message to {props.userId}</Typography>
+          <Typography variant="h5">Send Message to /{props.userId}</Typography>
         </Box>
         <Box
           sx={{
@@ -55,8 +63,23 @@ const SendMsg = (props: SendMsgProps) => {
             alignItems: 'center',
           }}
         >
-          <Button sx={{ color: 'white', bgcolor: 'green' }}>Send!</Button>
+          <Button
+            sx={{ color: 'white', bgcolor: 'green' }}
+            onClick={() => {
+              if (props.pin) {
+                handlePinPopupOpen(true);
+              } else {
+                // Send Message Endpoint
+              }
+            }}
+          >
+            Send!
+          </Button>
         </Box>
+        <PinPopup
+          pinPopupOpen={pinPopupOpen}
+          handlePinPopupOpen={handlePinPopupOpen}
+        />
       </Box>
     </Box>
   );

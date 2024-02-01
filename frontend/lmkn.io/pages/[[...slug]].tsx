@@ -1,43 +1,61 @@
 import SendMsg from '@/components/SendMsg/Index';
 import Home from '@/components/Home/Index';
-import { Box } from '@mui/material';
+import { Box, Dialog } from '@mui/material';
 import { Provider } from 'react-redux';
-import { NextApiRequest } from 'next';
+import {
+  GetServerSidePropsContext,
+  NextApiRequest,
+  NextApiResponse,
+} from 'next';
 import GlobalStore from '@/redux/store';
 import { appInitialState } from '@/redux/slices/appSlice';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import axios from 'axios';
+import { createRouter } from 'next-connect';
 
-export const getServerSideProps = async (req: NextApiRequest) => {
-  const userId = req.query.slug as string[];
-  // Return Home Page
-  if (!userId || !userId.length) {
-    return { props: {} };
-  }
+export const ncRouter = createRouter<NextApiRequest, NextApiResponse>().get(
+  async (req) => {
+    const userId = req.query.slug as string[];
+    console.log(userId);
+    // Return Home Page
+    if (!userId || !userId.length) {
+      return { props: {} };
+    }
+    const { data: response } = await axios({
+      method: 'GET',
+      params: { userId: userId[0] },
+      url: 'http://localhost:3000/api/userExists',
+    });
 
-  const { data: response } = await axios({
-    method: 'GET',
-    params: { userId: userId[0] },
-    url: 'http://localhost:3000/api/userExists',
-  });
+    if (response.success === false) {
+      return {
+        props: {
+          errorMessage: response.message,
+        },
+      };
+    }
 
-  if (response.success === false) {
+    // Return User Page
     return {
-      props: {
-        errorMessage: response.message,
-      },
+      props: { userId, pin: !!response.data.pin },
     };
   }
+);
 
-  // Return User Page
-  return {
-    props: { userId },
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+  const newReq = {
+    ...ctx.req,
+    query: ctx.query,
   };
+  return ncRouter.run(newReq as NextApiRequest, ctx.res as NextApiResponse);
 };
 
 interface MainProps {
   userId?: string;
   errorMessage?: string;
+  pin: boolean;
 }
+const queryClient = new QueryClient();
 const Main = (props: MainProps) => {
   return (
     <Provider
@@ -47,22 +65,25 @@ const Main = (props: MainProps) => {
         },
       })}
     >
-      <Box
-        sx={{
-          height: '100vh',
-          width: '100vw',
-          overflow: 'hidden',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        {props.userId ? (
-          <SendMsg userId={props.userId} />
-        ) : (
-          <Home errorMessage={props.errorMessage} />
-        )}
-      </Box>
+      <QueryClientProvider client={queryClient}>
+        <Box
+          sx={{
+            height: '100vh',
+            width: '100vw',
+            overflow: 'hidden',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingY: '3rem',
+          }}
+        >
+          {props.userId ? (
+            <SendMsg userId={props.userId} pin={props.pin} />
+          ) : (
+            <Home errorMessage={props.errorMessage} />
+          )}
+        </Box>
+      </QueryClientProvider>
     </Provider>
   );
 };

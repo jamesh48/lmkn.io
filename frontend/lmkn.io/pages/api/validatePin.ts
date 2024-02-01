@@ -1,13 +1,12 @@
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { NextApiRequest, NextApiResponse } from 'next';
 import router from '../../api-libs/base';
+import bcrypt from 'bcryptjs';
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 
 export default router
   .clone()
-  .get(async (req: NextApiRequest, res: NextApiResponse) => {
+  .get(async (req, res) => {
     const user = req.query.userId as string;
 
     // Database Lookup - does user already exist
@@ -18,12 +17,14 @@ export default router
         ':userId': { S: user },
       },
     });
-
-    const data = await client.send(queryCommand);
-
-    if (data.Items && data.Items.length) {
-      return res.send({ data: unmarshall(data.Items[0]), success: true });
+    const userResult = await client.send(queryCommand);
+    if (userResult.Items && userResult.Items.length) {
+      const pinHash = userResult.Items[0].pin.S;
+      if (pinHash) {
+        const result = await bcrypt.compare(req.query.pin as string, pinHash);
+        return res.send({ result });
+      }
     }
-    return res.send({ success: false, message: 'User Does not Exist!' });
+    return res.send({ error: 'internal server error' });
   })
   .handler();
