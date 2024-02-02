@@ -25,10 +25,6 @@ export class LMKStack extends cdk.Stack {
       },
     });
 
-    const { sendCodeLambda, processTaskTokenLambda } =
-      new StepFunctionsAuthFlow(this, 'lmk-auth-flow');
-
-    userTable.grantFullAccess(processTaskTokenLambda);
-    userTable.grantFullAccess(sendCodeLambda);
+    new StepFunctionsAuthFlow(this, 'lmk-auth-flow', { userTable });
   }
 }

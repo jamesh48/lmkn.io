@@ -2,12 +2,20 @@ import * as cdk from 'aws-cdk-lib';
 import * as stepfunctions from 'aws-cdk-lib/aws-stepfunctions';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
+import { ApiGwStepFunctionsIntegration } from './apigw';
 
 export class StepFunctionsAuthFlow extends Construct {
   sendCodeLambda: lambda.Function;
-  processTaskTokenLambda: lambda.Function;
-  constructor(scope: Construct, id: string) {
+  validCodeLambda: lambda.Function;
+  invalidCodeLambda: lambda.Function;
+  stateMachine: stepfunctions.StateMachine;
+  constructor(
+    scope: Construct,
+    id: string,
+    props: { userTable: dynamodb.Table }
+  ) {
     super(scope, id);
 
     this.sendCodeLambda = new lambda.Function(this, 'lmk-send-code-lambda', {
@@ -19,13 +27,17 @@ export class StepFunctionsAuthFlow extends Construct {
       const client = new DynamoDB({ region: 'us-east-1' })
       exports.handler = async (event) => {
         try {
+          // input parameters
           const userId =  event.userId;
+          const userPhone = event.userPhone;
+          const userPassword = event.userPassword;
           const taskToken = event.taskToken;
 
-          const tempAccessCode = await storeCodeForUserInDynamo(userId, taskToken);
+          const tempAccessCode = await storeCodeForUserInDynamo(userId, userPhone, userPassword, taskToken);
+
           return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Code stored successfully', tempAccessCode })
+            body: JSON.stringify({ message: 'Code stored successfully', tempAccessCode, userId })
           }
         } catch(error) {
           return {
@@ -40,7 +52,7 @@ export class StepFunctionsAuthFlow extends Construct {
         return Math.floor(10000 + Math.random() * 90000);
       }
 
-      const storeCodeForUserInDynamo = async (userId, taskToken) => {
+      const storeCodeForUserInDynamo = async (userId, userPhone, userPassword, taskToken) => {
         const random5DigitNumber = generateRandom5DigitNumber().toString();
 
         const params = {
@@ -48,9 +60,21 @@ export class StepFunctionsAuthFlow extends Construct {
           Key: {
             'userId': { S: userId }
           },
-          UpdateExpression: 'SET #taskToken = :taskToken, #c = :c',
-          ExpressionAttributeNames: { '#taskToken': 'taskToken', '#c': 'code' },
-          ExpressionAttributeValues: { ':taskToken': { S: taskToken }, ':c': { S: random5DigitNumber } },
+          UpdateExpression: 'SET #taskToken = :taskToken, #userPhone = :userPhone, #userPassword = :userPassword, #c = :c, #authenticated = :authenticated',
+          ExpressionAttributeNames: {
+            '#taskToken': 'taskToken',
+            '#userPhone': 'userPhone',
+            '#userPassword': 'userPassword',
+            '#c': 'code',
+            '#authenticated': 'authenticated'
+          },
+          ExpressionAttributeValues: {
+            ':taskToken': { S: taskToken },
+            ':c': { S: random5DigitNumber },
+            ':userPassword': { S: userPassword },
+            ':userPhone': { S: userPhone },
+            ':authenticated': { BOOL: false }
+          },
           ReturnValues: 'ALL_NEW'
         };
 
@@ -60,87 +84,70 @@ export class StepFunctionsAuthFlow extends Construct {
       `),
     });
 
-    this.processTaskTokenLambda = new lambda.Function(
-      this,
-      'lmk-check-resp-lambda',
-      {
-        functionName: 'lmk-check-resp-lambda',
-        runtime: lambda.Runtime.NODEJS_18_X,
-        handler: 'index.handler',
-        code: lambda.Code.fromInline(`
-        const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
-        const { SFNClient, SendTaskSuccessCommand } = require('@aws-sdk/client-sfn');
-
-        const client = new DynamoDB({ region: 'us-east-1' });
-        const sfnClient = new SFNClient({ region: 'us-east-1' });
-
-        const queryDynamoForTaskToken = async (tempCode, userPhone) => {
-          const queryCommand = new QueryCommand({
-            TableName: 'lmk-user-table',
-            IndexName: 'userPhoneGSI',
-            KeyConditionExpression: 'userPhone = :userPhone',
-            ExpressionAttributeValues: {
-              ':userPhone': { S: userPhone },
-            },
-          })
-          const response = await client.send(queryCommand)
-
-          if (response.Items && response.Items.length) {
-            return { taskToken: response.Items[0].taskToken.S, valid: true };
-          } else {
-            return { valid: false }
-          }
-        }
-
-        const sendTaskSuccess = async (taskToken, valid) => {
-          if (valid === true) {
-            const sfnCommand = new SendTaskSuccessCommand({
-              taskToken,
-              output: '{ "valid": true }'
-            });
-            await sfnClient.send(sfnCommand);
-          }
-          return "OK"
-        }
-
-        exports.handler = async (event) => {
-          const code = event.code;
-          const phone = event.phone;
-          const result = await queryDynamoForTaskToken(code, phone);
-          if (!result.valid) {
-            return {
-              statusCode: 403,
-              body: JSON.stringify({ error: "Invalid Code!" })
-            }
-          }
-          await sendTaskSuccess(result.taskToken, result.valid);
-        }`),
-      }
-    );
-
-    const validCodeLambda = new lambda.Function(this, 'lmk-valid-code-lambda', {
+    this.validCodeLambda = new lambda.Function(this, 'lmk-valid-code-lambda', {
       functionName: 'lmk-valid-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromInline(`exports.handler = async () => {}`),
+      code: lambda.Code.fromInline(`
+      const { DynamoDB, UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
+      const client = new DynamoDB({ region: 'us-east-1' });
+
+      const authenticateUser = async (userId) => {
+        const params = {
+          TableName: 'lmk-user-table',
+          Key: {
+            'userId': { S: userId }
+          },
+          UpdateExpression: 'SET #authenticatedAttr = :authenticatedValue REMOVE taskToken, code',
+          ExpressionAttributeNames: { '#authenticatedAttr': 'authenticated' },
+          ExpressionAttributeValues: { ':authenticatedValue': { BOOL: true }},
+          ReturnValues: 'ALL_NEW'
+        };
+
+        const updateItemCommand = new UpdateItemCommand(params)
+        await client.send(updateItemCommand);
+      }
+
+      exports.handler = async (event) => {
+        console.log(JSON.stringify(event));
+        await authenticateUser(event.userId);
+        return 'ok'
+      }`),
     });
 
-    const invalidCodeLambda = new lambda.Function(
+    this.invalidCodeLambda = new lambda.Function(
       this,
       'lmk-invalid-code-lambda',
       {
         functionName: 'lmk-invalid-code-lambda',
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'index.handler',
-        code: lambda.Code.fromInline(`exports.handler = async () => {}`),
-      }
-    );
+        code: lambda.Code.fromInline(`
+        const { DynamoDB, DeleteItemCommand } = require('@aws-sdk/client-dynamodb');
 
-    const processResult = new stepfunctions.Choice(this, 'ProcessResult').when(
-      stepfunctions.Condition.booleanEquals('$.valid', true),
-      new tasks.LambdaInvoke(this, 'ValidCode', {
-        lambdaFunction: validCodeLambda,
-      })
+        const client = new DynamoDB({ region: 'us-east-1' });
+
+        const deleteUser = async (userId) => {
+          const params = {
+            TableName: 'lmk-user-table',
+            Key: {
+              userId: { S: userId }
+            }
+          }
+
+          const deleteUserCommand = new DeleteItemCommand(params);
+          await client.send(deleteUserCommand)
+          return 'ok';
+        };
+
+        exports.handler = async (event) => {
+          console.log(JSON.stringify(event))
+
+          await deleteUser(event.userId);
+
+          return 'ok'
+        }`),
+      }
     );
 
     const definitionWithTasks = new tasks.LambdaInvoke(this, 'SendCode', {
@@ -148,27 +155,47 @@ export class StepFunctionsAuthFlow extends Construct {
       integrationPattern: stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
       payload: stepfunctions.TaskInput.fromObject({
         taskToken: stepfunctions.JsonPath.taskToken,
+        userId: stepfunctions.JsonPath.stringAt('$.userId'),
+        userPassword: stepfunctions.JsonPath.stringAt('$.userPassword'),
+        userPhone: stepfunctions.JsonPath.stringAt('$.userPhone'),
       }),
       taskTimeout: stepfunctions.Timeout.duration(cdk.Duration.minutes(10)),
     })
+      // on timeout
       .addCatch(
         new tasks.LambdaInvoke(this, 'InvalidCode', {
-          lambdaFunction: invalidCodeLambda,
+          lambdaFunction: this.invalidCodeLambda,
+          inputPath: stepfunctions.JsonPath.stringAt('$$.Execution.Input'),
         })
       )
-      .next(processResult);
+      .next(
+        new tasks.LambdaInvoke(this, 'ValidCode', {
+          lambdaFunction: this.validCodeLambda,
+        })
+      );
 
-    const stateMachine = new stepfunctions.StateMachine(
+    this.stateMachine = new stepfunctions.StateMachine(
       this,
       'lmk-StateMachine',
       {
         definition: definitionWithTasks,
-        timeout: cdk.Duration.minutes(5),
+        timeout: cdk.Duration.minutes(11),
       }
     );
-    this.sendCodeLambda.grantInvoke(stateMachine);
-    stateMachine.grantTaskResponse(this.processTaskTokenLambda);
-    validCodeLambda.grantInvoke(stateMachine);
-    invalidCodeLambda.grantInvoke(stateMachine);
+
+    this.sendCodeLambda.grantInvoke(this.stateMachine);
+    this.validCodeLambda.grantInvoke(this.stateMachine);
+    this.invalidCodeLambda.grantInvoke(this.stateMachine);
+    const { invokeStateMachineLambda, processTaskTokenLambda } =
+      new ApiGwStepFunctionsIntegration(this, 'lmk-api-gw', {
+        stateMachineArn: this.stateMachine.stateMachineArn,
+      });
+
+    this.stateMachine.grantStartExecution(invokeStateMachineLambda);
+    this.stateMachine.grantTaskResponse(processTaskTokenLambda);
+    props.userTable.grantFullAccess(processTaskTokenLambda);
+    props.userTable.grantFullAccess(this.sendCodeLambda);
+    props.userTable.grantWriteData(this.validCodeLambda);
+    props.userTable.grantWriteData(this.invalidCodeLambda);
   }
 }
