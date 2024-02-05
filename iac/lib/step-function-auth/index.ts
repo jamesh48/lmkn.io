@@ -22,97 +22,14 @@ export class StepFunctionsAuthFlow extends Construct {
       functionName: 'lmk-send-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-      const { DynamoDB, UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
-      const client = new DynamoDB({ region: 'us-east-1' })
-      exports.handler = async (event) => {
-        try {
-          // input parameters
-          const userId =  event.userId;
-          const userPhone = event.userPhone;
-          const userPassword = event.userPassword;
-          const taskToken = event.taskToken;
-
-          const tempAccessCode = await storeCodeForUserInDynamo(userId, userPhone, userPassword, taskToken);
-
-          return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'Code stored successfully', tempAccessCode, userId })
-          }
-        } catch(error) {
-          return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Error storing taskToken: ' + error.message })
-          }
-        }
-
-      }
-
-      function generateRandom5DigitNumber() {
-        return Math.floor(10000 + Math.random() * 90000);
-      }
-
-      const storeCodeForUserInDynamo = async (userId, userPhone, userPassword, taskToken) => {
-        const random5DigitNumber = generateRandom5DigitNumber().toString();
-
-        const params = {
-          TableName: 'lmk-user-table',
-          Key: {
-            'userId': { S: userId }
-          },
-          UpdateExpression: 'SET #taskToken = :taskToken, #userPhone = :userPhone, #userPassword = :userPassword, #c = :c, #authenticated = :authenticated',
-          ExpressionAttributeNames: {
-            '#taskToken': 'taskToken',
-            '#userPhone': 'userPhone',
-            '#userPassword': 'userPassword',
-            '#c': 'code',
-            '#authenticated': 'authenticated'
-          },
-          ExpressionAttributeValues: {
-            ':taskToken': { S: taskToken },
-            ':c': { S: random5DigitNumber },
-            ':userPassword': { S: userPassword },
-            ':userPhone': { S: userPhone },
-            ':authenticated': { BOOL: false }
-          },
-          ReturnValues: 'ALL_NEW'
-        };
-
-        await client.send(new UpdateItemCommand(params));
-        return random5DigitNumber;
-      }
-      `),
+      code: lambda.Code.fromAsset('../backend/dist/sendCode'),
     });
 
     this.validCodeLambda = new lambda.Function(this, 'lmk-valid-code-lambda', {
       functionName: 'lmk-valid-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-      const { DynamoDB, UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
-      const client = new DynamoDB({ region: 'us-east-1' });
-
-      const authenticateUser = async (userId) => {
-        const params = {
-          TableName: 'lmk-user-table',
-          Key: {
-            'userId': { S: userId }
-          },
-          UpdateExpression: 'SET #authenticatedAttr = :authenticatedValue REMOVE taskToken, code',
-          ExpressionAttributeNames: { '#authenticatedAttr': 'authenticated' },
-          ExpressionAttributeValues: { ':authenticatedValue': { BOOL: true }},
-          ReturnValues: 'ALL_NEW'
-        };
-
-        const updateItemCommand = new UpdateItemCommand(params)
-        await client.send(updateItemCommand);
-      }
-
-      exports.handler = async (event) => {
-        console.log(JSON.stringify(event));
-        await authenticateUser(event.userId);
-        return 'ok'
-      }`),
+      code: lambda.Code.fromAsset('../backend/dist/validCode'),
     });
 
     this.invalidCodeLambda = new lambda.Function(
@@ -122,31 +39,7 @@ export class StepFunctionsAuthFlow extends Construct {
         functionName: 'lmk-invalid-code-lambda',
         runtime: lambda.Runtime.NODEJS_18_X,
         handler: 'index.handler',
-        code: lambda.Code.fromInline(`
-        const { DynamoDB, DeleteItemCommand } = require('@aws-sdk/client-dynamodb');
-
-        const client = new DynamoDB({ region: 'us-east-1' });
-
-        const deleteUser = async (userId) => {
-          const params = {
-            TableName: 'lmk-user-table',
-            Key: {
-              userId: { S: userId }
-            }
-          }
-
-          const deleteUserCommand = new DeleteItemCommand(params);
-          await client.send(deleteUserCommand)
-          return 'ok';
-        };
-
-        exports.handler = async (event) => {
-          console.log(JSON.stringify(event))
-
-          await deleteUser(event.userId);
-
-          return 'ok'
-        }`),
+        code: lambda.Code.fromAsset('../backend/dist/invalidCode'),
       }
     );
 
@@ -186,6 +79,7 @@ export class StepFunctionsAuthFlow extends Construct {
     this.sendCodeLambda.grantInvoke(this.stateMachine);
     this.validCodeLambda.grantInvoke(this.stateMachine);
     this.invalidCodeLambda.grantInvoke(this.stateMachine);
+
     const { invokeStateMachineLambda, processTaskTokenLambda } =
       new ApiGwStepFunctionsIntegration(this, 'lmk-api-gw', {
         stateMachineArn: this.stateMachine.stateMachineArn,
