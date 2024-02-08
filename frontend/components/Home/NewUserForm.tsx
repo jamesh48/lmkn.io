@@ -24,7 +24,7 @@ const NewUserForm = () => {
         params: {
           userId: values.userId,
           userPhone: values.phone,
-          password: values.passwordOne,
+          userPassword: values.passwordOne,
         },
       });
     } catch (err) {
