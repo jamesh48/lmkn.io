@@ -20,8 +20,7 @@ export default router
       if (!process.env.SALT) {
         throw new Error('ENV SALT is not defined!');
       }
-      console.log(process.env.SALT);
-      console.log(userPassword);
+
       const hashedPassword = await bcrypt.hash(userPassword, process.env.SALT);
       // If not, create user
       const { data } = await axios({

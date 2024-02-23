@@ -1,6 +1,7 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import PinPopup from './PinPopup';
 import { useState } from 'react';
+import axios from 'axios';
 
 interface SendMsgProps {
   userId: string;
@@ -10,6 +11,10 @@ const SendMsg = (props: SendMsgProps) => {
   const [pinPopupOpen, setPinModalOpen] = useState(false);
   const handlePinPopupOpen = (flag: boolean) => {
     setPinModalOpen(flag);
+  };
+
+  const handleSendMessage = async () => {
+    await axios({ url: '/api/sendMsg', method: 'POST', data: {} });
   };
 
   return (
@@ -57,9 +62,7 @@ const SendMsg = (props: SendMsgProps) => {
         <Box
           sx={{
             flex: 0.25,
-
             display: 'flex',
-
             alignItems: 'center',
           }}
         >

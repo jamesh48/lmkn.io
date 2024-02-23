@@ -7,11 +7,13 @@ import UserIdInput from './UserIdInput';
 import PasswordInput from './PasswordInput';
 import PhoneNumberInput from './PhoneNumberInput';
 import OptInInput from './OptInInput';
+import ConfirmOTP from './ConfirmOTP';
 
 const NewUserForm = () => {
   const [submissionError, setSubmissionError] = useState('');
   const [userIdMessage, setUserIdMessage] = useState('');
   const [phoneMessage, setPhoneMessage] = useState('');
+  const [otpView, setOTPView] = useState(false);
   const createUser = async (values: {
     phone: string;
     userId: string;
@@ -27,6 +29,7 @@ const NewUserForm = () => {
           userPassword: values.passwordOne,
         },
       });
+      setOTPView(true);
     } catch (err) {
       const typedErr = err as {
         response: { data: { error: string; success: boolean } };
@@ -210,6 +213,7 @@ const NewUserForm = () => {
                 />
               ) : null}
             </Form>
+            <ConfirmOTP open={otpView} userPhone={values.phone} />
           </Box>
         )}
       </Formik>
