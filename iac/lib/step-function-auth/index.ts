@@ -3,6 +3,7 @@ import * as stepfunctions from 'aws-cdk-lib/aws-stepfunctions';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { ApiGwStepFunctionsIntegration } from './apigw';
 
@@ -14,7 +15,15 @@ export class StepFunctionsAuthFlow extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    props: { userTable: dynamodb.Table }
+    props: {
+      userTable: dynamodb.Table;
+      iamRole: iam.Role;
+      env: {
+        SMS_APPLICATION_ID: string;
+        SMS_REGISTRATION_KEYWORD: string;
+        SMS_ORIGINATION_NUMBER: string;
+      };
+    }
   ) {
     super(scope, id);
 
@@ -23,6 +32,12 @@ export class StepFunctionsAuthFlow extends Construct {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('../backend/dist/sendCode'),
+      role: props.iamRole,
+      environment: {
+        SMS_APPLICATION_ID: props.env.SMS_APPLICATION_ID,
+        SMS_REGISTRATION_KEYWORD: props.env.SMS_REGISTRATION_KEYWORD,
+        SMS_ORIGINATION_NUMBER: props.env.SMS_ORIGINATION_NUMBER,
+      },
     });
 
     this.validCodeLambda = new lambda.Function(this, 'lmk-valid-code-lambda', {

@@ -11,6 +11,9 @@ interface LMKStackProps extends cdk.StackProps {
     AWS_CLUSTER_ARN: string;
     AWS_DEFAULT_SG: string;
     AWS_VPC_ID: string;
+    SMS_APPLICATION_ID: string;
+    SMS_REGISTRATION_KEYWORD: string;
+    SMS_ORIGINATION_NUMBER: string;
   };
   svc_env: {
     AUTH_ENDPOINT: string;
@@ -39,11 +42,18 @@ export class LMKStack extends cdk.Stack {
       },
     });
 
-    new iam.Role(this, 'lmkn-send-msg-role', {
-      assumedBy: new iam.ServicePrincipal('pinpoint.amazonaws.com'),
+    const lmknSendMsgRole = new iam.Role(this, 'lmkn-send-msg-role', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       inlinePolicies: {
         SendMessagePolicy: new iam.PolicyDocument({
           statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['mobiletargeting:SendMessages'],
+              resources: [
+                'arn:aws:mobiletargeting:us-east-1:471507967541:apps/29260de985144481a4145de51995eaab/messages',
+              ],
+            }),
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: [
@@ -53,11 +63,7 @@ export class LMKStack extends cdk.Stack {
               ],
               resources: ['*'],
             }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['mobiletargeting:SendMessages'],
-              resources: ['*'],
-            }),
+
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: [
@@ -104,6 +110,15 @@ export class LMKStack extends cdk.Stack {
       aws_env: props.aws_env,
       svc_env: props.svc_env,
     });
-    new StepFunctionsAuthFlow(this, 'lmk-auth-flow', { userTable });
+
+    new StepFunctionsAuthFlow(this, 'lmk-auth-flow', {
+      userTable,
+      iamRole: lmknSendMsgRole,
+      env: {
+        SMS_APPLICATION_ID: props.aws_env.SMS_APPLICATION_ID,
+        SMS_REGISTRATION_KEYWORD: props.aws_env.SMS_REGISTRATION_KEYWORD,
+        SMS_ORIGINATION_NUMBER: props.aws_env.SMS_ORIGINATION_NUMBER,
+      },
+    });
   }
 }

@@ -10,12 +10,13 @@ const pinClient = new PinpointClient({ region: 'us-east-1' });
 const client = new DynamoDB({ region: 'us-east-1' });
 
 const sendTextMessage = async (userPhone: string, accessCode: string) => {
-  const originationNumber = '';
+  const originationNumber = process.env.SMS_ORIGINATION_NUMBER;
   const destinationNumber = userPhone;
-  const message = accessCode;
+  const message = `Your LMKN.io one-time Passcode is ${accessCode}`;
   const messageType = 'TRANSACTIONAL';
+
   const params: SendMessagesCommandInput = {
-    ApplicationId: '29260de985144481a4145de51995eaab',
+    ApplicationId: process.env.SMS_APPLICATION_ID,
     MessageRequest: {
       Addresses: {
         [destinationNumber]: {
@@ -27,7 +28,7 @@ const sendTextMessage = async (userPhone: string, accessCode: string) => {
           Body: message,
           MessageType: messageType,
           OriginationNumber: originationNumber,
-          Keyword: 'KEYWORD_471507967541',
+          Keyword: process.env.SMS_REGISTRATION_KEYWORD,
         },
       },
     },
@@ -56,7 +57,7 @@ export const handler: Handler = async (event) => {
       taskToken
     );
 
-    sendTextMessage(userPhone, tempAccessCode);
+    await sendTextMessage(userPhone, tempAccessCode);
 
     return {
       statusCode: 200,

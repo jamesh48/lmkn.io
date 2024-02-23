@@ -65,7 +65,7 @@ export class LMKNFrontendStack extends Construct {
     const container = lmknFeFargateService.taskDefinition.addContainer(
       'lmknFrontend-container',
       {
-        image: ecs.ContainerImage.fromAsset('../'),
+        image: ecs.ContainerImage.fromAsset('../frontend'),
         logging: new ecs.AwsLogDriver({
           streamPrefix: 'lmknf-container',
           logRetention: logs.RetentionDays.FIVE_DAYS,
