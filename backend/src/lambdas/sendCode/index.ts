@@ -1,6 +1,46 @@
-const { DynamoDB, UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
+import { DynamoDB, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { Handler } from 'aws-lambda';
+import {
+  SendMessagesCommand,
+  SendMessagesCommandInput,
+  PinpointClient,
+} from '@aws-sdk/client-pinpoint';
+
+const pinClient = new PinpointClient({ region: 'us-east-1' });
 const client = new DynamoDB({ region: 'us-east-1' });
+
+const sendTextMessage = async (userPhone: string, accessCode: string) => {
+  const originationNumber = '';
+  const destinationNumber = userPhone;
+  const message = accessCode;
+  const messageType = 'TRANSACTIONAL';
+  const params: SendMessagesCommandInput = {
+    ApplicationId: '29260de985144481a4145de51995eaab',
+    MessageRequest: {
+      Addresses: {
+        [destinationNumber]: {
+          ChannelType: 'SMS',
+        },
+      },
+      MessageConfiguration: {
+        SMSMessage: {
+          Body: message,
+          MessageType: messageType,
+          OriginationNumber: originationNumber,
+          Keyword: 'KEYWORD_471507967541',
+        },
+      },
+    },
+  };
+
+  const data = await pinClient.send(new SendMessagesCommand(params));
+  console.log(
+    'Message sent! ' +
+      data.MessageResponse?.Result?.[destinationNumber]['StatusMessage']
+  );
+  return data;
+};
+
 export const handler: Handler = async (event) => {
   try {
     // input parameters
@@ -15,6 +55,8 @@ export const handler: Handler = async (event) => {
       userPassword,
       taskToken
     );
+
+    sendTextMessage(userPhone, tempAccessCode);
 
     return {
       statusCode: 200,
@@ -67,7 +109,7 @@ const storeCodeForUserInDynamo = async (
       ':userPhone': { S: userPhone },
       ':authenticated': { BOOL: false },
     },
-    ReturnValues: 'ALL_NEW',
+    // ReturnValues: 'ALL_NEW',
   };
 
   await client.send(new UpdateItemCommand(params));
