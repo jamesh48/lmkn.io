@@ -36,7 +36,7 @@ export const ncRouter = createRouter<NextApiRequest, NextApiResponse>().get(
 
     // Return User Page
     return {
-      props: { userId, pin: !!response.data.pin },
+      props: { userId: userId[0], userHasPin: !!response.data.pin },
     };
   }
 );
@@ -52,7 +52,7 @@ export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
 interface MainProps {
   userId?: string;
   errorMessage?: string;
-  pin: boolean;
+  userHasPin: boolean;
 }
 const queryClient = new QueryClient();
 const Main = (props: MainProps) => {
@@ -77,7 +77,7 @@ const Main = (props: MainProps) => {
           }}
         >
           {props.userId ? (
-            <SendMsg userId={props.userId} pin={props.pin} />
+            <SendMsg userId={props.userId} userHasPin={props.userHasPin} />
           ) : (
             <Home errorMessage={props.errorMessage} />
           )}

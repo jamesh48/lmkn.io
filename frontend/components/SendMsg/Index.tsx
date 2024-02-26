@@ -5,16 +5,24 @@ import axios from 'axios';
 
 interface SendMsgProps {
   userId: string;
-  pin: boolean;
+  userHasPin: boolean;
 }
 const SendMsg = (props: SendMsgProps) => {
   const [pinPopupOpen, setPinModalOpen] = useState(false);
+  const [msg, setMsg] = useState('');
   const handlePinPopupOpen = (flag: boolean) => {
     setPinModalOpen(flag);
   };
 
   const handleSendMessage = async () => {
-    await axios({ url: '/api/sendMsg', method: 'POST', data: {} });
+    await axios({
+      url: '/api/sendMsg',
+      method: 'POST',
+      data: { message: msg, userId: props.userId },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   };
 
   return (
@@ -57,7 +65,13 @@ const SendMsg = (props: SendMsgProps) => {
             display: 'flex',
           }}
         >
-          <TextField multiline rows={10} fullWidth></TextField>
+          <TextField
+            multiline
+            rows={10}
+            fullWidth
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          ></TextField>
         </Box>
         <Box
           sx={{
@@ -69,10 +83,11 @@ const SendMsg = (props: SendMsgProps) => {
           <Button
             sx={{ color: 'white', bgcolor: 'green' }}
             onClick={() => {
-              if (props.pin) {
+              if (props.userHasPin) {
                 handlePinPopupOpen(true);
               } else {
                 // Send Message Endpoint
+                handleSendMessage();
               }
             }}
           >

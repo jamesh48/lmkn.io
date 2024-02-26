@@ -106,10 +106,10 @@ export class LMKStack extends cdk.Stack {
       },
     });
 
-    new LMKNFrontendStack(this, 'lmkn-frontend-stack', {
-      aws_env: props.aws_env,
-      svc_env: props.svc_env,
-    });
+    // new LMKNFrontendStack(this, 'lmkn-frontend-stack', {
+    //   aws_env: props.aws_env,
+    //   svc_env: props.svc_env,
+    // });
 
     new StepFunctionsAuthFlow(this, 'lmk-auth-flow', {
       userTable,

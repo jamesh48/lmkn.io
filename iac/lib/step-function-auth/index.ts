@@ -98,6 +98,8 @@ export class StepFunctionsAuthFlow extends Construct {
     const { invokeStateMachineLambda, processTaskTokenLambda } =
       new ApiGwStepFunctionsIntegration(this, 'lmk-api-gw', {
         stateMachineArn: this.stateMachine.stateMachineArn,
+        iamRole: props.iamRole,
+        env: props.env,
       });
 
     this.stateMachine.grantStartExecution(invokeStateMachineLambda);
