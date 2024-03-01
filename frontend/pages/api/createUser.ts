@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { userExists } from '@/api-libs/userExists';
 import router from '../../api-libs/base';
+import { getIronSession } from 'iron-session';
 
 export default router
   .clone()
@@ -33,14 +34,12 @@ export default router
 
       console.log(data);
 
-      // Then set cookie on browser for persistence.
-      const futureDate = new Date(
-        new Date().getTime() + 10 * 365 * 24 * 60 * 60 * 1000
-      ); // 10 years from now
-      res.setHeader(
-        'Set-Cookie',
-        `userId=${userId}; HttpOnly;Expires=${futureDate.toUTCString()}`
-      );
+      const session = await getIronSession<{ userId: string }>(req, res, {
+        cookieName: 'userId',
+        password: process.env.IRON_SESSION_PWD!,
+      });
+      session.userId = userId;
+      await session.save();
 
       res.send({ success: true });
     }

@@ -9,8 +9,14 @@ import PhoneNumberInput from './PhoneNumberInput';
 import OptInInput from './OptInInput';
 import ConfirmOTP from './ConfirmOTP';
 import Login from './Login';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
-const NewUserForm = () => {
+interface NewUserFormProps {
+  refetch: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<any, Error>>;
+}
+const NewUserForm = (props: NewUserFormProps) => {
   const [submissionError, setSubmissionError] = useState('');
   const [userIdMessage, setUserIdMessage] = useState('');
   const [phoneMessage, setPhoneMessage] = useState('');
@@ -92,6 +98,14 @@ const NewUserForm = () => {
     }, 500),
     []
   );
+
+  const handleLoginView = async (flag: boolean, success?: boolean) => {
+    setLoginView(flag);
+
+    if (success) {
+      await props.refetch();
+    }
+  };
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -220,13 +234,13 @@ const NewUserForm = () => {
                   cursor: 'pointer',
                 }}
                 onClick={() => {
-                  setLoginView(true);
+                  handleLoginView(true);
                 }}
               >
                 Login?
               </Link>
             </Form>
-            <Login open={loginView} />
+            <Login open={loginView} handleLoginView={handleLoginView} />
             <ConfirmOTP
               open={otpView}
               userPhone={values.phone}

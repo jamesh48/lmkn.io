@@ -10,7 +10,11 @@ interface HomeProps {
 }
 
 const Home = (props: HomeProps) => {
-  const { data: loggedInUserProfile, isPending } = useQuery({
+  const {
+    data: loggedInUserProfile,
+    isPending,
+    refetch,
+  } = useQuery({
     queryKey: ['loggedInUser'],
     queryFn: () =>
       axios({
@@ -38,7 +42,7 @@ const Home = (props: HomeProps) => {
     return <ExistingUserDetails loggedInUserProfile={loggedInUserProfile} />;
   }
 
-  return <NewUserForm />;
+  return <NewUserForm refetch={refetch} />;
 };
 
 export default Home;

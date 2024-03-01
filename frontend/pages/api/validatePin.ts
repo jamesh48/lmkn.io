@@ -7,14 +7,14 @@ const client = new DynamoDBClient({ region: 'us-east-1' });
 export default router
   .clone()
   .get(async (req, res) => {
-    const user = req.query.userId as string;
+    const userId = req.query.userId as string;
 
     // Database Lookup - does user already exist
     const queryCommand = new QueryCommand({
       TableName: 'lmk-user-table',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
-        ':userId': { S: user },
+        ':userId': { S: userId },
       },
     });
     const userResult = await client.send(queryCommand);
@@ -25,6 +25,6 @@ export default router
         return res.send({ result });
       }
     }
-    return res.send({ error: 'internal server error' });
+    return res.status(500).send({ error: 'Internal server error' });
   })
   .handler();
