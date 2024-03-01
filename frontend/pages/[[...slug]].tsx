@@ -73,7 +73,6 @@ const Main = (props: MainProps) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            paddingY: '3rem',
           }}
         >
           {props.userId ? (

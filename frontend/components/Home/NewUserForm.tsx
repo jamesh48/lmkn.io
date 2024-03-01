@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import axios from 'axios';
-import { Box, OutlinedInput, Typography } from '@mui/material';
+import { Box, Link, OutlinedInput, Typography } from '@mui/material';
 import { Formik, Form } from 'formik';
 import debounce from 'lodash/debounce';
 import UserIdInput from './UserIdInput';
@@ -8,12 +8,14 @@ import PasswordInput from './PasswordInput';
 import PhoneNumberInput from './PhoneNumberInput';
 import OptInInput from './OptInInput';
 import ConfirmOTP from './ConfirmOTP';
+import Login from './Login';
 
 const NewUserForm = () => {
   const [submissionError, setSubmissionError] = useState('');
   const [userIdMessage, setUserIdMessage] = useState('');
   const [phoneMessage, setPhoneMessage] = useState('');
   const [otpView, setOTPView] = useState(false);
+  const [loginView, setLoginView] = useState(false);
   const createUser = async (values: {
     phone: string;
     userId: string;
@@ -193,7 +195,6 @@ const NewUserForm = () => {
                   />
                 )
               ) : null}
-
               {values.optedIn &&
               phoneMessage === 'Phone Number is Available!' ? (
                 <PasswordInput
@@ -212,8 +213,27 @@ const NewUserForm = () => {
                   inputProps={{ sx: { cursor: 'pointer' } }}
                 />
               ) : null}
+              <Link
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setLoginView(true);
+                }}
+              >
+                Login?
+              </Link>
             </Form>
-            <ConfirmOTP open={otpView} userPhone={values.phone} />
+            <Login open={loginView} />
+            <ConfirmOTP
+              open={otpView}
+              userPhone={values.phone}
+              handleOpen={(flag: boolean) => {
+                setOTPView(flag);
+              }}
+            />
           </Box>
         )}
       </Formik>

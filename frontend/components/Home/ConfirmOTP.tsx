@@ -2,7 +2,11 @@ import { Box, Dialog, OutlinedInput, Typography } from '@mui/material';
 import axios from 'axios';
 import { Form, Formik } from 'formik';
 
-const ConfirmOTP = (props: { open: boolean; userPhone: string }) => {
+const ConfirmOTP = (props: {
+  open: boolean;
+  userPhone: string;
+  handleOpen: (flag: boolean) => void;
+}) => {
   return (
     <Dialog open={props.open}>
       <Formik
@@ -12,6 +16,7 @@ const ConfirmOTP = (props: { open: boolean; userPhone: string }) => {
             method: 'POST',
             data: { code: values.otp, userPhone: props.userPhone },
           });
+          props.handleOpen(false);
         }}
         initialValues={{ otp: '' }}
       >

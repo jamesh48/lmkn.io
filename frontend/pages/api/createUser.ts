@@ -10,6 +10,7 @@ export default router
     const userId = req.query.userId as string;
     const userPhone = req.query.userPhone as string;
     const userPassword = req.query.userPassword as string;
+
     const result = await userExists(userId);
     if (result.success === true) {
       // If so, return error

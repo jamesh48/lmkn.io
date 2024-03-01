@@ -8,14 +8,16 @@ const client = new DynamoDBClient({ region: 'us-east-1' });
 export default router
   .clone()
   .get(async (req: NextApiRequest, res: NextApiResponse) => {
-    const user = req.cookies.userId as string;
-
+    const userId = req.cookies.userId as string;
+    if (!userId) {
+      return res.status(404).send({ error: 'User not Found' });
+    }
     // Database Lookup - does user already exist
     const queryCommand = new QueryCommand({
       TableName: 'lmk-user-table',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
-        ':userId': { S: user },
+        ':userId': { S: userId },
       },
     });
 

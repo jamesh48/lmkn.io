@@ -6,12 +6,11 @@ import { userExists } from '@/api-libs/userExists';
 export default router
   .clone()
   .post(async (req: NextApiRequest, res: NextApiResponse) => {
-    console.log(req.body);
     const user = await userExists(req.body.userId);
     const userPhone = user.data?.userPhone;
 
     if (!userPhone) {
-      return res.status(404).send({ error: 'User not found' });
+      return res.status(404).send({ error: 'User not Found' });
     }
 
     await axios({
