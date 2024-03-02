@@ -23,7 +23,9 @@ const Home = (props: HomeProps) => {
         withCredentials: true,
       })
         .then((res) => res.data.data)
-        .catch((err) => {}),
+        .catch((err) => {
+          return {};
+        }),
   });
 
   if (isPending) {
@@ -39,7 +41,12 @@ const Home = (props: HomeProps) => {
   }
 
   if (loggedInUserProfile?.userId) {
-    return <ExistingUserDetails loggedInUserProfile={loggedInUserProfile} />;
+    return (
+      <ExistingUserDetails
+        loggedInUserProfile={loggedInUserProfile}
+        refetch={refetch}
+      />
+    );
   }
 
   return <NewUserForm refetch={refetch} />;

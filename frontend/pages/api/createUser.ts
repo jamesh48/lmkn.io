@@ -1,9 +1,8 @@
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { userExists } from '@/api-libs/userExists';
-import router from '../../api-libs/base';
 import { getIronSession } from 'iron-session';
+import { router, userExists } from '../../api-libs';
 
 export default router
   .clone()
@@ -31,8 +30,6 @@ export default router
         data: { userPassword: hashedPassword, userId, userPhone },
         headers: { 'Content-Type': 'application/json' },
       });
-
-      console.log(data);
 
       const session = await getIronSession<{ userId: string }>(req, res, {
         cookieName: 'userId',

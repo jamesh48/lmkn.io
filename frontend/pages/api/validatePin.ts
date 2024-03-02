@@ -1,8 +1,6 @@
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import router from '../../api-libs/base';
+import { router, dynamoClient } from '../../api-libs';
 import bcrypt from 'bcryptjs';
-
-const client = new DynamoDBClient({ region: 'us-east-1' });
 
 export default router
   .clone()
@@ -17,7 +15,7 @@ export default router
         ':userId': { S: userId },
       },
     });
-    const userResult = await client.send(queryCommand);
+    const userResult = await dynamoClient.send(queryCommand);
     if (userResult.Items && userResult.Items.length) {
       const pinHash = userResult.Items[0].pin.S;
       if (pinHash) {

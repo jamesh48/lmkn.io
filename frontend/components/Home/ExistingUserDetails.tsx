@@ -1,9 +1,14 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import Image from 'next/image';
 import UserPreferences from './UserPreferences';
 import { useState } from 'react';
+import axios from 'axios';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
 interface ExistingUserDetailsProps {
+  refetch: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<any, Error>>;
   loggedInUserProfile: {
     userId: string;
     userPhone: string;
@@ -15,6 +20,13 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
     setUserPreferencesOpen(flag);
   };
 
+  const handleLogout = async () => {
+    await axios({
+      url: '/api/deleteSession',
+      method: 'POST',
+    });
+    await props.refetch();
+  };
   return (
     <Box
       sx={{
@@ -65,6 +77,16 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
           handleUserPreferencesOpen={handleUserPreferencesOpen}
           userId={props.loggedInUserProfile.userId}
         />
+        <Link
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          onClick={handleLogout}
+        >
+          Logout
+        </Link>
       </Box>
     </Box>
   );

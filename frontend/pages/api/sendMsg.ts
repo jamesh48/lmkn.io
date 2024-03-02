@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import router from '../../api-libs/base';
 import axios from 'axios';
-import { userExists } from '@/api-libs/userExists';
+import { router, userExists } from '../../api-libs';
 
 export default router
   .clone()

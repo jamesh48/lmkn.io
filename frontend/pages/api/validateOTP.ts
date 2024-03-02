@@ -5,8 +5,6 @@ import axios from 'axios';
 export default router
   .clone()
   .post(async (req: NextApiRequest, res: NextApiResponse) => {
-    console.log(req.body);
-
     const { data } = await axios({
       method: 'POST',
       url: `${process.env.AUTH_ENDPOINT}/validate`,

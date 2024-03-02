@@ -1,7 +1,7 @@
 import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import bcrypt from 'bcryptjs';
 import { NextApiRequest, NextApiResponse } from 'next';
-import router from '../../api-libs/base';
+import { router, dynamoClient } from '../../api-libs';
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 
@@ -41,7 +41,7 @@ export default router
           ':value': { S: updateValue },
         },
       });
-      await client.send(updateItemCommand);
+      await dynamoClient.send(updateItemCommand);
       return res.send({ message: 'ok' });
     } catch (err) {
       return res.status(500).send({ error: 'Error!' });

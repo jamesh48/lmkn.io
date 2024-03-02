@@ -1,10 +1,8 @@
-import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { QueryCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { getIronSession } from 'iron-session';
-import router from '../../api-libs/base';
-
-const client = new DynamoDBClient({ region: 'us-east-1' });
+import { dynamoClient, router } from '../../api-libs';
 
 export default router
   .clone()
@@ -26,7 +24,7 @@ export default router
       },
     });
 
-    const data = await client.send(queryCommand);
+    const data = await dynamoClient.send(queryCommand);
 
     if (data.Items && data.Items.length) {
       const returnData = unmarshall(data.Items[0]);

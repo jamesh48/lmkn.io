@@ -1,10 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import router from '../../api-libs/base';
+import { router, dynamoClient } from '../../api-libs';
 import bcrypt from 'bcryptjs';
 import { getIronSession } from 'iron-session';
-import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-
-const client = new DynamoDBClient({ region: 'us-east-1' });
+import { QueryCommand } from '@aws-sdk/client-dynamodb';
 
 export default router
   .clone()
@@ -21,7 +19,7 @@ export default router
       },
     });
 
-    const userResult = await client.send(queryCommand);
+    const userResult = await dynamoClient.send(queryCommand);
     if (userResult.Items && userResult.Items.length) {
       const hashedPassword = userResult.Items[0].userPassword.S;
       if (hashedPassword) {
