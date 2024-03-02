@@ -10,7 +10,7 @@ interface UserIdInputProps {
 
 const UserIdInput = (props: UserIdInputProps) => {
   return (
-    <Box sx={{ width: '25rem' }}>
+    <Box sx={{ width: '25rem', marginY: '.5rem' }}>
       <Box sx={{ width: '100%' }}>
         <OutlinedInput
           fullWidth

@@ -1,6 +1,6 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import PinPopup from './PinPopup';
-import { useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 
 interface SendMsgProps {
@@ -26,6 +26,12 @@ const SendMsg = (props: SendMsgProps) => {
     });
   };
 
+  const inputRef = useRef<HTMLElement>();
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -38,7 +44,6 @@ const SendMsg = (props: SendMsgProps) => {
     >
       <Box
         sx={{
-          border: '1px solid black',
           height: '35%',
           width: '50%',
           display: 'flex',
@@ -57,23 +62,16 @@ const SendMsg = (props: SendMsgProps) => {
         >
           <Typography variant="h5">Send Message to /{props.userId}</Typography>
         </Box>
-        <Box
-          sx={{
-            flex: 0.5,
-            width: '75%',
-            alignItems: 'center',
-            justifyContent: 'center',
-            display: 'flex',
-          }}
-        >
-          <TextField
-            multiline
-            rows={10}
-            fullWidth
-            value={msg}
-            onChange={(e) => setMsg(e.target.value)}
-          />
-        </Box>
+
+        <TextField
+          multiline
+          rows={10}
+          fullWidth
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          sx={{ marginY: '.5rem' }}
+          inputRef={inputRef}
+        />
         <Box
           sx={{
             flex: 0.25,

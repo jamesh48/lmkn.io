@@ -23,7 +23,8 @@ const OptInInput = (props: OptInInputProps) => {
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        padding: '1rem',
+        padding: '.5rem',
+        marginY: '.5rem',
         border: '1px solid lightgray',
         borderRadius: '5px',
       }}

@@ -26,6 +26,7 @@ const PhoneNumberInput = (props: PhoneNumberInputProps) => {
         display: 'flex',
         alignItems: 'flex-start',
         flexDirection: 'column',
+        marginY: '.5rem',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>

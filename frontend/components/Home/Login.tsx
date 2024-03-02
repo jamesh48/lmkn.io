@@ -1,6 +1,7 @@
 import { Close, Label } from '@mui/icons-material';
 import {
   Box,
+  CircularProgress,
   Dialog,
   InputLabel,
   OutlinedInput,
@@ -16,6 +17,19 @@ interface LoginProps {
 const Login = (props: LoginProps) => {
   return (
     <Dialog open={props.open}>
+      <Box
+        sx={{
+          display: 'flex',
+          width: '100%',
+          justifyContent: 'flex-end',
+          borderBottom: '1px solid black',
+        }}
+      >
+        <Close
+          sx={{ cursor: 'pointer' }}
+          onClick={() => props.handleLoginView(false)}
+        />
+      </Box>
       <Formik
         onSubmit={async (values, formikHelpers) => {
           try {
@@ -44,52 +58,99 @@ const Login = (props: LoginProps) => {
         }}
       >
         {({ values, handleChange, errors, isSubmitting }) => (
-          <Box>
-            <Box sx={{ display: 'flex' }}>
-              <Typography
-                variant="h5"
-                sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}
-              >
-                Login
-              </Typography>
-              <Close
-                sx={{ cursor: 'pointer' }}
-                onClick={() => props.handleLoginView(false)}
-              />
+          <Box
+            sx={{
+              width: '25rem',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              paddingX: '1rem',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                width: '100%',
+              }}
+            >
+              <Typography variant="h5">Login</Typography>
             </Box>
-            <Form>
+            <Form style={{ width: '25rem' }}>
               <Box
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                <InputLabel>User Name</InputLabel>
-                <OutlinedInput
-                  name="userId"
-                  value={values.userId}
-                  onChange={handleChange}
-                />
-                <InputLabel>User Password</InputLabel>
-                <OutlinedInput
-                  name="userPassword"
-                  value={values.userPassword}
-                  onChange={handleChange}
-                  type="password"
-                />
+                <Box
+                  sx={{
+                    width: '100%',
+                    marginY: '.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <InputLabel>User Name</InputLabel>
+                  <OutlinedInput
+                    name="userId"
+                    value={values.userId}
+                    onChange={handleChange}
+                    sx={{ width: '100%' }}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    width: '100%',
+                    marginY: '.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <InputLabel>User Password</InputLabel>
+                  <OutlinedInput
+                    name="userPassword"
+                    value={values.userPassword}
+                    onChange={handleChange}
+                    type="password"
+                    sx={{ width: '100%' }}
+                  />
+                </Box>
                 {errors.userPassword ? (
                   <Typography sx={{ color: 'red' }}>
                     {errors.userPassword}
                   </Typography>
                 ) : null}
               </Box>
-              <OutlinedInput
-                fullWidth
-                type="submit"
-                value="Login"
-                disabled={isSubmitting}
-                inputProps={{ sx: { cursor: 'pointer' } }}
-              />
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  height: '5rem',
+                  alignItems: 'center',
+                }}
+              >
+                {isSubmitting ? (
+                  <CircularProgress />
+                ) : (
+                  <OutlinedInput
+                    type="submit"
+                    value="Login"
+                    disabled={isSubmitting}
+                    inputProps={{ sx: { cursor: 'pointer' } }}
+                    sx={{
+                      width: '10rem',
+                    }}
+                  />
+                )}
+              </Box>
             </Form>
           </Box>
         )}

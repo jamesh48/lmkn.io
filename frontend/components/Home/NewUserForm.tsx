@@ -146,11 +146,7 @@ const NewUserForm = (props: NewUserFormProps) => {
           }
           if (!values.passwordOne) {
             errors.passwordOne = 'Required';
-          } else if (
-            values.passwordOne &&
-            values.passwordTwo &&
-            values.passwordOne.length < 8
-          ) {
+          } else if (values.passwordOne.length < 8) {
             errors.passwordOne = 'password must be at least 8 characters';
           } else if (values.passwordOne !== values.passwordTwo) {
             errors.passwordOne = 'passwords do not match';
@@ -174,86 +170,108 @@ const NewUserForm = (props: NewUserFormProps) => {
           setFieldValue,
           errors,
           isValidating,
-        }) => (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              border: '1px solid black',
-              padding: '1rem',
-              width: '25rem',
-            }}
-          >
-            <Typography>{submissionError}</Typography>
-            <Form>
-              <UserIdInput
-                handleChange={handleChange}
-                userId={values.userId}
-                userIdMessage={userIdMessage}
-                inputRef={userIdRef}
-              />
-              {values.userId.length &&
-              userIdMessage === 'User Identifier is Available!' ? (
-                !values.optedIn ? (
-                  <OptInInput setFieldValue={setFieldValue} />
-                ) : (
-                  <PhoneNumberInput
-                    isValidating={isValidating}
-                    setFieldValue={setFieldValue}
-                    handleChange={handleChange}
-                    phoneErrors={phoneMessage}
-                    phone={values.phone}
-                    inputRef={phoneRef}
-                  />
-                )
-              ) : null}
-              {values.optedIn &&
-              phoneMessage === 'Phone Number is Available!' ? (
-                <PasswordInput
-                  handleChange={handleChange}
-                  passwordOneErrors={errors.passwordOne || 'Passwords Match!'}
-                  passwordOne={values.passwordOne}
-                  passwordTwo={values.passwordTwo}
-                />
-              ) : null}
-              {!errors.passwordOne ? (
-                <OutlinedInput
-                  fullWidth
-                  type="submit"
-                  value="Request User ID"
-                  disabled={isSubmitting}
-                  inputProps={{ sx: { cursor: 'pointer' } }}
-                />
-              ) : null}
-              <Link
+        }) => {
+          const allGood =
+            values.userId &&
+            !errors.userId &&
+            values.optedIn &&
+            !errors.optedIn &&
+            values.phone &&
+            !errors.phone &&
+            values.passwordOne &&
+            !errors.passwordOne;
+
+          return (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                border: '1px solid black',
+                padding: '1rem',
+                width: '25rem',
+              }}
+            >
+              <Box
                 sx={{
+                  width: '100%',
                   display: 'flex',
-                  justifyContent: 'flex-end',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  handleLoginView(true);
+                  justifyContent: 'flex-start',
                 }}
               >
-                Login?
-              </Link>
-            </Form>
-            <Login open={loginView} handleLoginView={handleLoginView} />
-            <ConfirmOTP
-              open={otpView}
-              userPhone={values.phone}
-              handleOpen={async (flag: boolean, success?: boolean) => {
-                setOTPView(flag);
+                <Typography variant="h5">Request User ID</Typography>
+              </Box>
+              <Typography>{submissionError}</Typography>
+              <Form>
+                <UserIdInput
+                  handleChange={handleChange}
+                  userId={values.userId}
+                  userIdMessage={userIdMessage}
+                  inputRef={userIdRef}
+                />
+                {values.userId.length &&
+                userIdMessage === 'User Identifier is Available!' ? (
+                  !values.optedIn ? (
+                    <OptInInput setFieldValue={setFieldValue} />
+                  ) : (
+                    <PhoneNumberInput
+                      isValidating={isValidating}
+                      setFieldValue={setFieldValue}
+                      handleChange={handleChange}
+                      phoneErrors={phoneMessage}
+                      phone={values.phone}
+                      inputRef={phoneRef}
+                    />
+                  )
+                ) : null}
+                {values.optedIn &&
+                phoneMessage === 'Phone Number is Available!' ? (
+                  <PasswordInput
+                    handleChange={handleChange}
+                    passwordOneErrors={errors.passwordOne || 'Passwords Match!'}
+                    passwordOne={values.passwordOne}
+                    passwordTwo={values.passwordTwo}
+                  />
+                ) : null}
+                {allGood ? (
+                  <OutlinedInput
+                    fullWidth
+                    type="submit"
+                    value="Request User ID"
+                    disabled={isSubmitting}
+                    inputProps={{ sx: { cursor: 'pointer' } }}
+                    sx={{ marginY: '.5rem' }}
+                  />
+                ) : null}
+                <Link
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    handleLoginView(true);
+                  }}
+                >
+                  Login?
+                </Link>
+              </Form>
+              <Login open={loginView} handleLoginView={handleLoginView} />
+              <ConfirmOTP
+                open={otpView}
+                userPhone={values.phone}
+                handleOpen={async (flag: boolean, success?: boolean) => {
+                  setOTPView(flag);
 
-                if (success) {
-                  await props.refetch();
-                }
-              }}
-            />
-          </Box>
-        )}
+                  if (success) {
+                    await props.refetch();
+                  }
+                }}
+              />
+            </Box>
+          );
+        }}
       </Formik>
     </Box>
   );
