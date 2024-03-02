@@ -12,13 +12,15 @@ import { Form, Formik } from 'formik';
 interface PinPopupProps {
   pinPopupOpen: boolean;
   handlePinPopupOpen: (flag: boolean) => void;
+  handleSendMessage: () => Promise<void>;
 }
 const PinPopup = (props: PinPopupProps) => {
-  const validateAndSend = async (pin: string) => {
+  const validatePin = async (pin: string) => {
     const { data } = await axios({
       url: '/api/validatePin',
       params: { userId: 'james', pin },
     });
+
     return data.result;
   };
   return (
@@ -33,9 +35,10 @@ const PinPopup = (props: PinPopupProps) => {
         <Formik
           initialValues={{ inputPin: '', successMessage: false }}
           onSubmit={async (values, formikHelpers) => {
-            const result = await validateAndSend(values.inputPin);
+            const result = await validatePin(values.inputPin);
             if (result === true) {
-              formikHelpers.setFieldValue('successMessage', true);
+              await props.handleSendMessage();
+              await formikHelpers.setFieldValue('successMessage', true);
               setTimeout(() => {
                 props.handlePinPopupOpen(false);
               }, 2000);

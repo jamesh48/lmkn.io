@@ -244,8 +244,12 @@ const NewUserForm = (props: NewUserFormProps) => {
             <ConfirmOTP
               open={otpView}
               userPhone={values.phone}
-              handleOpen={(flag: boolean) => {
+              handleOpen={async (flag: boolean, success?: boolean) => {
                 setOTPView(flag);
+
+                if (success) {
+                  await props.refetch();
+                }
               }}
             />
           </Box>

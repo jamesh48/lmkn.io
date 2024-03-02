@@ -5,7 +5,7 @@ import { Form, Formik } from 'formik';
 const ConfirmOTP = (props: {
   open: boolean;
   userPhone: string;
-  handleOpen: (flag: boolean) => void;
+  handleOpen: (flag: boolean, success?: boolean) => void;
 }) => {
   return (
     <Dialog open={props.open}>
@@ -16,7 +16,7 @@ const ConfirmOTP = (props: {
             method: 'POST',
             data: { code: values.otp, userPhone: props.userPhone },
           });
-          props.handleOpen(false);
+          props.handleOpen(false, true);
         }}
         initialValues={{ otp: '' }}
       >

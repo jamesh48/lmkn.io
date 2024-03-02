@@ -15,6 +15,7 @@ const SendMsg = (props: SendMsgProps) => {
   };
 
   const handleSendMessage = async () => {
+    setMsg('');
     await axios({
       url: '/api/sendMsg',
       method: 'POST',
@@ -71,7 +72,7 @@ const SendMsg = (props: SendMsgProps) => {
             fullWidth
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
-          ></TextField>
+          />
         </Box>
         <Box
           sx={{
@@ -97,6 +98,7 @@ const SendMsg = (props: SendMsgProps) => {
         <PinPopup
           pinPopupOpen={pinPopupOpen}
           handlePinPopupOpen={handlePinPopupOpen}
+          handleSendMessage={handleSendMessage}
         />
       </Box>
     </Box>
