@@ -12,6 +12,8 @@ const {
   AWS_CLUSTER_ARN,
   AWS_DEFAULT_SG,
   AWS_VPC_ID,
+  CDK_DEFAULT_REGION,
+  CDK_DEFAULT_ACCOUNT,
   AUTH_ENDPOINT,
   SALT,
   SMS_APPLICATION_ID,
@@ -36,6 +38,14 @@ if (!AWS_VPC_ID) {
 
 if (!AUTH_ENDPOINT) {
   throw new Error('AUTH_ENDPOINT is undefined!');
+}
+
+if (!CDK_DEFAULT_REGION) {
+  throw new Error('CDK_DEFAULT_REGION env is undefined!');
+}
+
+if (!CDK_DEFAULT_ACCOUNT) {
+  throw new Error('CDK_DEFAULT_ACCOUNT env is undefined!');
 }
 
 if (!SALT) {
@@ -69,7 +79,7 @@ new LMKStack(app, 'lmk-stack', {
     SALT,
   },
   env: {
-    region: process.env.CDK_DEFAULT_REGION,
-    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: CDK_DEFAULT_REGION,
+    account: CDK_DEFAULT_ACCOUNT,
   },
 });

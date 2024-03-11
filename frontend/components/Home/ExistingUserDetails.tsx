@@ -34,7 +34,7 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
         justifyContent: 'flex-start',
         alignItems: 'center',
         flexDirection: 'column',
-        height: '100%',
+        height: '90%',
       }}
     >
       <Typography sx={{ textDecoration: 'underline' }} variant="h3">
@@ -85,7 +85,7 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
           }}
           onClick={handleLogout}
         >
-          Logout
+          <Typography sx={{ cursor: 'pointer' }}>Logout</Typography>
         </Link>
       </Box>
     </Box>
