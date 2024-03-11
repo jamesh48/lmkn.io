@@ -63,41 +63,23 @@ export class LMKStack extends cdk.Stack {
               ],
               resources: ['*'],
             }),
-
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
               actions: [
                 'mobiletargeting:GetEndpoint',
                 'mobiletargeting:UpdateEndpoint',
                 'mobiletargeting:PutEvents',
-              ],
-              resources: ['*'],
-            }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['mobiletargeting:SendOTPMessage'],
-              resources: ['*'],
-            }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: ['mobiletargeting:PhoneNumberValidate'],
-              resources: ['*'],
-            }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: [
-                'pinpoint:SendMessages',
-                'pinpoint:UpdateDestination',
-                'pinpoint:SendDestinationVerificationCode',
+                'mobiletargeting:SendOTPMessage',
+                'mobiletargeting:PhoneNumberValidate',
               ],
               resources: ['*'],
             }),
             // new iam.PolicyStatement({
             //   effect: iam.Effect.ALLOW,
             //   actions: [
-            //     'sms-voice:SendTextMessage',
-            //     'sms-voice:CreateVerifiedDestinationNumber',
-            //     'sms-voice:SendDestinationNumberVerificationCode',
+            //     'pinpoint:SendMessages',
+            //     'pinpoint:UpdateDestination',
+            //     'pinpoint:SendDestinationVerificationCode',
             //   ],
             //   resources: ['*'],
             // }),
