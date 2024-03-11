@@ -4,39 +4,62 @@ import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as path from 'path';
 import { Construct } from 'constructs';
 import { ApiGwStepFunctionsIntegration } from './apigw';
 
+interface StepFunctionsAuthFlowProps {
+  userTable: dynamodb.Table;
+  env: {
+    SMS_APPLICATION_ID: string;
+    SMS_REGISTRATION_KEYWORD: string;
+    SMS_ORIGINATION_NUMBER: string;
+  };
+}
 export class StepFunctionsAuthFlow extends Construct {
   sendCodeLambda: lambda.Function;
   validCodeLambda: lambda.Function;
   invalidCodeLambda: lambda.Function;
   stateMachine: stepfunctions.StateMachine;
-  constructor(
-    scope: Construct,
-    id: string,
-    props: {
-      userTable: dynamodb.Table;
-      iamRole: iam.Role;
-      env: {
-        SMS_APPLICATION_ID: string;
-        SMS_REGISTRATION_KEYWORD: string;
-        SMS_ORIGINATION_NUMBER: string;
-      };
-    }
-  ) {
+  iamRole: iam.Role;
+  constructor(scope: Construct, id: string, props: StepFunctionsAuthFlowProps) {
     super(scope, id);
 
-    console.log('<--path-->');
-    console.log(path.resolve('../../backend'));
-    console.log(__dirname);
+    this.iamRole = new iam.Role(this, 'lmkn-send-msg-role', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      inlinePolicies: {
+        SendMessagePolicy: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'mobiletargeting:SendMessages',
+                'mobiletargeting:SendOTPMessage',
+                'mobiletargeting:PhoneNumberValidate',
+              ],
+              resources: [
+                'arn:aws:mobiletargeting:us-east-1:471507967541:apps/29260de985144481a4145de51995eaab/messages',
+              ],
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'logs:CreateLogStream',
+                'logs:PutLogEvents',
+                'logs:CreateLogGroup',
+              ],
+              resources: ['*'],
+            }),
+          ],
+        }),
+      },
+    });
+
     this.sendCodeLambda = new lambda.Function(this, 'lmk-send-code-lambda', {
       functionName: 'lmk-send-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('../backend/dist/sendCode'),
-      role: props.iamRole,
+      role: this.iamRole,
       environment: {
         SMS_APPLICATION_ID: props.env.SMS_APPLICATION_ID,
         SMS_REGISTRATION_KEYWORD: props.env.SMS_REGISTRATION_KEYWORD,
@@ -102,7 +125,7 @@ export class StepFunctionsAuthFlow extends Construct {
     const { invokeStateMachineLambda, processTaskTokenLambda } =
       new ApiGwStepFunctionsIntegration(this, 'lmk-api-gw', {
         stateMachineArn: this.stateMachine.stateMachineArn,
-        iamRole: props.iamRole,
+        iamRole: this.iamRole,
         env: props.env,
       });
 
