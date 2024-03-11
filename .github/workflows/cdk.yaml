@@ -1,4 +1,4 @@
-name: AWS Service CI/CD
+name: AWS Service CDK CI/CD
 
 on:
   push:
