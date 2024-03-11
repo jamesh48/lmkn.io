@@ -92,15 +92,15 @@ export class LMKStack extends cdk.Stack {
               ],
               resources: ['*'],
             }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: [
-                'sms-voice:SendTextMessage',
-                'sms-voice:CreateVerifiedDestinationNumber',
-                'sms-voice:SendDestinationNumberVerificationCode',
-              ],
-              resources: ['*'],
-            }),
+            // new iam.PolicyStatement({
+            //   effect: iam.Effect.ALLOW,
+            //   actions: [
+            //     'sms-voice:SendTextMessage',
+            //     'sms-voice:CreateVerifiedDestinationNumber',
+            //     'sms-voice:SendDestinationNumberVerificationCode',
+            //   ],
+            //   resources: ['*'],
+            // }),
           ],
         }),
       },
