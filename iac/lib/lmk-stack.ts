@@ -49,7 +49,14 @@ export class LMKStack extends cdk.Stack {
           statements: [
             new iam.PolicyStatement({
               effect: iam.Effect.ALLOW,
-              actions: ['mobiletargeting:SendMessages'],
+              actions: [
+                'mobiletargeting:SendMessages',
+                'mobiletargeting:GetEndpoint',
+                'mobiletargeting:UpdateEndpoint',
+                'mobiletargeting:PutEvents',
+                'mobiletargeting:SendOTPMessage',
+                'mobiletargeting:PhoneNumberValidate',
+              ],
               resources: [
                 'arn:aws:mobiletargeting:us-east-1:471507967541:apps/29260de985144481a4145de51995eaab/messages',
               ],
@@ -63,26 +70,6 @@ export class LMKStack extends cdk.Stack {
               ],
               resources: ['*'],
             }),
-            new iam.PolicyStatement({
-              effect: iam.Effect.ALLOW,
-              actions: [
-                'mobiletargeting:GetEndpoint',
-                'mobiletargeting:UpdateEndpoint',
-                'mobiletargeting:PutEvents',
-                'mobiletargeting:SendOTPMessage',
-                'mobiletargeting:PhoneNumberValidate',
-              ],
-              resources: ['*'],
-            }),
-            // new iam.PolicyStatement({
-            //   effect: iam.Effect.ALLOW,
-            //   actions: [
-            //     'pinpoint:SendMessages',
-            //     'pinpoint:UpdateDestination',
-            //     'pinpoint:SendDestinationVerificationCode',
-            //   ],
-            //   resources: ['*'],
-            // }),
           ],
         }),
       },
