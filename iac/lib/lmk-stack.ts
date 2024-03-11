@@ -51,9 +51,9 @@ export class LMKStack extends cdk.Stack {
               effect: iam.Effect.ALLOW,
               actions: [
                 'mobiletargeting:SendMessages',
-                'mobiletargeting:GetEndpoint',
-                'mobiletargeting:UpdateEndpoint',
-                'mobiletargeting:PutEvents',
+                // 'mobiletargeting:GetEndpoint',
+                // 'mobiletargeting:UpdateEndpoint',
+                // 'mobiletargeting:PutEvents',
                 'mobiletargeting:SendOTPMessage',
                 'mobiletargeting:PhoneNumberValidate',
               ],
