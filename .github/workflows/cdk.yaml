@@ -51,7 +51,7 @@ jobs:
         run: |
           cd iac;
           npm install;
-          ls -ltr;
+          ls -ltr ../backend;
           cdk deploy --require-approval=never;
         env:
           AUTH_ENDPOINT: ${{ vars.AUTH_ENDPOINT }}
