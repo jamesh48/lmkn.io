@@ -28,8 +28,9 @@ export class StepFunctionsAuthFlow extends Construct {
   ) {
     super(scope, id);
 
-    console.log('path');
-    console.log(path.resolve('../'));
+    console.log('<--path-->');
+    console.log(path.resolve('../../'));
+    console.log(__dirname);
     this.sendCodeLambda = new lambda.Function(this, 'lmk-send-code-lambda', {
       functionName: 'lmk-send-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
