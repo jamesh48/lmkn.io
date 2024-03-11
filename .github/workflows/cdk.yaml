@@ -4,22 +4,22 @@ on:
   push:
     branches: [main]
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16, 18]
-    # name: Node ${{ matrix.node-version }} Test
-    # steps:
-    #   - uses: actions/checkout@v3
-    #   - name: Setup node
-    #     uses: actions/setup-node@v3
-    #     with:
-    #       node-version: ${{ matrix.node-version }}
-    #   - name: Install Node.js dependencies
-    #     run: npm ci
-    #   - name: Run Client integration tests
-    #     run: npm run test -- --runInBand
+  # test:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [16, 18]
+  # name: Node ${{ matrix.node-version }} Test
+  # steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Setup node
+  #     uses: actions/setup-node@v3
+  #     with:
+  #       node-version: ${{ matrix.node-version }}
+  #   - name: Install Node.js dependencies
+  #     run: npm ci
+  #   - name: Run Client integration tests
+  #     run: npm run test -- --runInBand
   # https://dev.to/aws-builders/deploy-to-aws-with-github-actions-and-aws-cdk-4m1e
   deploy:
     runs-on: ubuntu-latest
