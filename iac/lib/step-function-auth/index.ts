@@ -35,7 +35,7 @@ export class StepFunctionsAuthFlow extends Construct {
       functionName: 'lmk-send-code-lambda',
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve('../../backend/dist/sendCode')),
+      code: lambda.Code.fromAsset('../backend/dist/sendCode'),
       role: props.iamRole,
       environment: {
         SMS_APPLICATION_ID: props.env.SMS_APPLICATION_ID,
