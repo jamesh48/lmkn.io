@@ -33,7 +33,7 @@ export class StepFunctionsAuthFlow extends Construct {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(
-        path.resolve(__dirname, '../', 'backend/dist/sendCode')
+        path.resolve(__dirname, '../../', 'backend/dist/sendCode')
       ),
       role: props.iamRole,
       environment: {
