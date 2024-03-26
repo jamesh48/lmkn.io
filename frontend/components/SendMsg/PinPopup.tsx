@@ -80,12 +80,23 @@ const PinPopup = (props: PinPopupProps) => {
                   ) : isSubmitting ? (
                     <CircularProgress />
                   ) : (
-                    <OutlinedInput
-                      inputProps={{ maxLength: 8, sx: { textAlign: 'center' } }}
-                      value={values.inputPin}
-                      name="inputPin"
-                      onChange={handleChange}
-                    />
+                    <Box>
+                      <OutlinedInput
+                        inputProps={{
+                          maxLength: 8,
+                          sx: { textAlign: 'center' },
+                        }}
+                        value={values.inputPin}
+                        name="inputPin"
+                        onChange={handleChange}
+                        sx={{ height: '3rem' }}
+                      />
+                      <OutlinedInput
+                        type="submit"
+                        value="Send!"
+                        sx={{ height: '3rem' }}
+                      />
+                    </Box>
                   )}
                   <Typography sx={{ color: 'red' }}>
                     {errors.inputPin && errors.inputPin}

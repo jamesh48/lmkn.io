@@ -6,7 +6,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
 
-interface LMKNIOFrontendStackProps {
+interface LMKNIOFrontendStackProps extends cdk.StackProps {
   aws_env: {
     AWS_DEFAULT_SG: string;
     AWS_CLUSTER_ARN: string;

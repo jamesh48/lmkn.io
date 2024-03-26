@@ -12,7 +12,7 @@ const client = new DynamoDB({ region: 'us-east-1' });
 const sendTextMessage = async (userPhone: string, accessCode: string) => {
   const originationNumber = process.env.SMS_ORIGINATION_NUMBER;
   const destinationNumber = userPhone;
-  const message = `Your LMKN.io one-time Passcode is ${accessCode}`;
+  const message = `Your lmkn.net one-time Passcode is ${accessCode}`;
   const messageType = 'TRANSACTIONAL';
 
   const params: SendMessagesCommandInput = {

@@ -48,7 +48,7 @@ const ExistingUserDetails = (props: ExistingUserDetailsProps) => {
         }}
       >
         <Typography variant="h5">
-          Unique Identifier: www.lmkn.io/{props.loggedInUserProfile.userId}
+          Unique Identifier: www.lmkn.net/{props.loggedInUserProfile.userId}
         </Typography>
         <Typography variant="h5">
           Contact Phone Number: {props.loggedInUserProfile.userPhone}
