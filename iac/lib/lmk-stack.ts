@@ -1,9 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { StepFunctionsAuthFlow } from './step-function-auth';
-import { LMKNFrontendStack } from './frontend';
+// import { LMKNFrontendStack } from './frontend';
 
 interface LMKStackProps extends cdk.StackProps {
   aws_env: {
