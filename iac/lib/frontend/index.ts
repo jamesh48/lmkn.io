@@ -72,6 +72,7 @@ export class LMKNFrontendStack extends Construct {
         }),
         environment: {
           ...props.svc_env,
+          IRON_SESSION_PWD: 'jambobjones-jambobjones-jambobjones',
         },
       }
     );

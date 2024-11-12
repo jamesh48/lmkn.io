@@ -1,6 +1,6 @@
 import SendMsg from '@/components/SendMsg/Index';
 import Home from '@/components/Home/Index';
-import { Box, Dialog } from '@mui/material';
+import { Box } from '@mui/material';
 import { Provider } from 'react-redux';
 import {
   GetServerSidePropsContext,
