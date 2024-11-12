@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { StepFunctionsAuthFlow } from './step-function-auth';
-// import { LMKNFrontendStack } from './frontend';
+import { LMKNFrontendStack } from './frontend';
 
 interface LMKStackProps extends cdk.StackProps {
   aws_env: {
@@ -41,10 +41,10 @@ export class LMKStack extends cdk.Stack {
       },
     });
 
-    // new LMKNFrontendStack(this, 'lmkn-frontend-stack', {
-    //   aws_env: props.aws_env,
-    //   svc_env: props.svc_env,
-    // });
+    new LMKNFrontendStack(this, 'lmkn-frontend-stack', {
+      aws_env: props.aws_env,
+      svc_env: props.svc_env,
+    });
 
     new StepFunctionsAuthFlow(this, 'lmk-auth-flow', {
       userTable,
