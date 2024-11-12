@@ -104,7 +104,7 @@ export class LMKNFrontendStack extends Construct {
         healthyThresholdCount: 3,
         interval: cdk.Duration.seconds(30),
         port: '3000',
-        timeout: cdk.Duration.seconds(15),
+        timeout: cdk.Duration.seconds(30),
       },
     });
 
