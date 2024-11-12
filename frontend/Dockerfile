@@ -24,7 +24,7 @@ FROM node:lts-alpine AS runner
 ARG X_TAG
 WORKDIR /opt/lmkn-app
 ENV NODE_ENV=production
-COPY --from=builder /opt/lmkn-app/next.config.js ./
+COPY --from=builder /opt/lmkn-app/next.config.mjs ./
 COPY --from=builder /opt/lmkn-app/public ./public
 COPY --from=builder /opt/lmkn-app/.next ./.next
 COPY --from=builder /opt/lmkn-app/package*.json ./
