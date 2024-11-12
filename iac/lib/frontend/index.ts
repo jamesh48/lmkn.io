@@ -101,10 +101,10 @@ export class LMKNFrontendStack extends Construct {
         path: '/',
         unhealthyThresholdCount: 2,
         healthyHttpCodes: '200',
-        healthyThresholdCount: 5,
+        healthyThresholdCount: 3,
         interval: cdk.Duration.seconds(30),
         port: '3000',
-        timeout: cdk.Duration.seconds(10),
+        timeout: cdk.Duration.seconds(15),
       },
     });
 
